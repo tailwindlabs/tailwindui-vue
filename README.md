@@ -25,24 +25,25 @@ Basic example:
 ```html
 <template>
   <Listbox v-model="selectedWrestler" v-slot="{ isOpen }">
-  <ListboxLabel class="sr-only">
-    Select a wrestler:
-  </ListboxLabel>
-  <ListboxButton class="rounded p-3 border">
-    {{ selectedWrestler }}
-  </ListboxButton>
-  <ListboxList v-show="isOpen">
-    <ListboxOption
-      v-for="wrestler in wrestlers"
-      :key="wrestler"
-      :value="wrestler"
-      v-slot="{ isActive, isSelected }"
-    >
-      <div class="p-3" :class="isActive ? 'bg-blue-600 text-white' : ''bg-white text-gray-900'">
-        {{ wrestler }}
-        <img v-show="isSelected" src="/checkmark.svg">
-      </div>
-    </ListboxOption>
+    <ListboxLabel class="sr-only">
+      Select a wrestler:
+    </ListboxLabel>
+    <ListboxButton class="rounded p-3 border">
+      {{ selectedWrestler }}
+    </ListboxButton>
+    <ListboxList v-show="isOpen">
+      <ListboxOption
+        v-for="wrestler in wrestlers"
+        :key="wrestler"
+        :value="wrestler"
+        v-slot="{ isActive, isSelected }"
+      >
+        <div class="p-3" :class="isActive ? 'bg-blue-600 text-white' : ''bg-white text-gray-900'">
+          {{ wrestler }}
+          <img v-show="isSelected" src="/checkmark.svg">
+        </div>
+      </ListboxOption>
+    </ListboxList>
   </Listbox>
 </template>
 
