@@ -24,7 +24,7 @@ Basic example:
 
 ```html
 <template>
-  <Listbox v-model="selectedWrestler" v-slot="{ isOpen }">
+  <Listbox v-model="selectedWrestler" #default="{ isOpen }">
     <ListboxLabel class="sr-only">
       Select a wrestler:
     </ListboxLabel>
@@ -36,7 +36,7 @@ Basic example:
         v-for="wrestler in wrestlers"
         :key="wrestler"
         :value="wrestler"
-        v-slot="{ isActive, isSelected }"
+        #default="{ isActive, isSelected }"
       >
         <div class="p-3" :class="isActive ? 'bg-blue-600 text-white' : 'bg-white text-gray-900'">
           {{ wrestler }}
