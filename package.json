@@ -1,0 +1,19 @@
+{
+  "name": "@tailwindui/vue",
+  "version": "0.1.0-alpha.0",
+  "author": "Adam Wathan",
+  "license": "MIT",
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.module.js",
+  "unpkg": "dist/index.umd.js",
+  "scripts": {
+    "build": "microbundle"
+  },
+  "dependencies": {
+    "debounce": "^1.2.0"
+  },
+  "devDependencies": {
+    "microbundle": "^0.12.0"
+  }
+}
