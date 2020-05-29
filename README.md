@@ -38,7 +38,7 @@ Basic example:
       :value="wrestler"
       v-slot="{ isActive, isSelected }"
     >
-      <div class="p-3" :class="isActive ? 'bg-blue-600 text-white' : ''bg-white text-gray-900'">
+      <div class="p-3" :class="isActive ? 'bg-blue-600 text-white' : 'bg-white text-gray-900'">
         {{ wrestler }}
         <img v-show="isSelected" src="/checkmark.svg">
       </div>
