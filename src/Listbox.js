@@ -53,11 +53,12 @@ export const ListboxButton = {
   },
   render(h) {
     return h(
-      'button',
+      'div',
       {
         attrs: {
           id: this.id,
-          type: 'button',
+          role: 'button',
+          tabindex: '0',
           'aria-haspopup': 'listbox',
           'aria-labelledby': `${this.context.labelId.value} ${this.id}`,
           ...(this.context.isOpen.value ? { 'aria-expanded': 'true' } : {}),
@@ -68,6 +69,13 @@ export const ListboxButton = {
           },
           blur: () => {
             this.isFocused = false
+          },
+          keydown: (e) => {
+            const triggersToggle = [' ', 'Spacebar', 'Enter']
+            if (triggersToggle.includes(e.key)) {
+              e.preventDefault()
+              this.$el.click()
+            }
           },
           click: this.context.toggle,
         },
