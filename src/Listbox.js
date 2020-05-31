@@ -195,7 +195,9 @@ export const ListboxOption = {
   },
   render(h) {
     const isActive = this.context.activeItem.value === this.value
-    const isSelected = this.context.props.value === this.value
+    const isSelected = isArray(this.context.props.value)
+                        ? this.context.props.value.includes(this.value)
+                        : this.context.props.value === this.value
 
     return h(
       'li',
@@ -329,7 +331,11 @@ export const Listbox = {
     },
     select(value) {
       if (isArray(this.value)) {
-        this.$emit('input', [...this.value, value])
+        if (this.value.includes(value)) {
+          this.$emit('input', this.value.filter(s => s !== value));
+        } else {
+          this.$emit('input', [...this.value, value])
+        }
       } else {
         this.$emit('input', value)
       }
