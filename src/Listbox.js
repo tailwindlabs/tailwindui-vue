@@ -16,6 +16,10 @@ function isString(value) {
   return typeof value === 'string' || value instanceof String
 }
 
+function isArray(value) {
+  return Array.isArray(value)
+}
+
 export const ListboxLabel = {
   inject: {
     context: ListboxSymbol,
@@ -324,7 +328,11 @@ export const Listbox = {
       this.$data.listboxButtonRef.value().focus()
     },
     select(value) {
-      this.$emit('input', value)
+      if (isArray(this.value)) {
+        this.$emit('input', [...this.value, value])
+      } else {
+        this.$emit('input', value)
+      }
       this.$nextTick(() => {
         this.close()
       })
@@ -337,11 +345,15 @@ export const Listbox = {
       }
 
       this.$nextTick(() => {
-        this.listboxListRef
+        var child = this.listboxListRef
           .value()
-          .children[this.values.value.indexOf(this.activeItem.value)].scrollIntoView({
+          .children[this.values.value.indexOf(this.activeItem.value)]
+        
+        if (child) {
+          child.scrollIntoView({
             block: 'nearest',
           })
+        }
       })
     },
   },
