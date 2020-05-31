@@ -351,15 +351,14 @@ export const Listbox = {
       }
 
       this.$nextTick(() => {
-        var child = this.listboxListRef
-          .value()
-          .children[this.values.value.indexOf(this.activeItem.value)]
-        
-        if (child) {
-          child.scrollIntoView({
-            block: 'nearest',
-          })
-        }
+        if (!isArray(this.activeItem.value)) {
+          this.listboxListRef
+            .value()
+            .children[this.values.value.indexOf(this.activeItem.value)]
+            .scrollIntoView({
+              block: 'nearest',
+            })
+          }
       })
     },
   },
