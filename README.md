@@ -87,7 +87,7 @@ Mutliple:
       Select your favorite wrestlers:
     </ListboxLabel>
     <ListboxButton class="rounded p-3 border">
-      <span v-for="(wrestler, i) in selectedWrestlers">{{ wrestler }}</span>
+      <span v-for="(wrestler, i) in selectedWrestlers" :key="i">{{ wrestler }}</span>
     </ListboxButton>
     <ListboxList v-show="isOpen">
       <ListboxOption
