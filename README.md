@@ -118,7 +118,7 @@ Mutliple:
     },
     data() {
       return {
-        selectedWrestler: ['The Ultimate Warrior', 'Bret Hart'],
+        selectedWrestlers: ['The Ultimate Warrior', 'Bret Hart'],
         wrestlers: [
           'The Ultimate Warrior',
           'Randy Savage',
