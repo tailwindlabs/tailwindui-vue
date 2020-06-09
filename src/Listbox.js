@@ -139,12 +139,12 @@ export const ListboxList = {
                 if (this.context.typeahead.value !== '') {
                   this.context.type(' ')
                 } else {
-                  this.context.select(this.context.activeItem.value)
+                  this.context.select(this.context.activeItem.value || this.context.props.value)
                 }
                 break
               case 'Enter':
                 e.preventDefault()
-                this.context.select(this.context.activeItem.value)
+                this.context.select(this.context.activeItem.value || this.context.props.value)
                 break
               default:
                 if (!(isString(e.key) && e.key.length === 1)) {
