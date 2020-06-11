@@ -202,7 +202,7 @@ export const ListboxOption = {
         attrs: {
           id: this.id,
           role: 'option',
-          'aria-selected': isSelected ? true : (this.context.props.multiple ? false : null),
+          'aria-selected': isSelected ? 'true' : (this.context.props.multiple ? 'false' : null),
         },
         on: {
           click: () => {
