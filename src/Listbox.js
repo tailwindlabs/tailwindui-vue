@@ -99,6 +99,7 @@ export const ListboxList = {
           role: 'listbox',
           'aria-activedescendant': this.context.getActiveDescendant(),
           'aria-labelledby': this.context.props.labelledby,
+          'aria-multiselectable': this.context.props.multiple,
         },
         on: {
           focusout: (e) => {
@@ -191,7 +192,9 @@ export const ListboxOption = {
   },
   render(h) {
     const isActive = this.context.activeItem.value === this.value
-    const isSelected = this.context.props.value === this.value
+    const isSelected = this.context.props.multiple
+      ? this.context.props.value.includes(this.value)
+      : this.context.props.value === this.value
 
     return h(
       'li',
@@ -199,11 +202,7 @@ export const ListboxOption = {
         attrs: {
           id: this.id,
           role: 'option',
-          ...(isSelected
-            ? {
-                'aria-selected': true,
-              }
-            : {}),
+          'aria-selected': isSelected ? true : (this.context.props.multiple ? false : null),
         },
         on: {
           click: () => {
@@ -227,7 +226,15 @@ export const ListboxOption = {
 }
 
 export const Listbox = {
-  props: ['value'],
+  props: {
+    value: {
+      required: true,
+    },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data: (vm) => ({
     typeahead: { value: '' },
     listboxButtonRef: { value: null },
@@ -314,7 +321,11 @@ export const Listbox = {
     },
     open() {
       this.$data.isOpen.value = true
-      this.focus(this.$props.value)
+      // Multi selects focus the first selected element when opened
+      const activeValue = this.$props.multiple
+        ? this.$data.values.value.find(value => this.$props.value.includes(value))
+        : this.$props.value
+      this.focus(activeValue)
       this.$nextTick(() => {
         this.$data.listboxListRef.value().focus()
       })
@@ -324,6 +335,17 @@ export const Listbox = {
       this.$data.listboxButtonRef.value().focus()
     },
     select(value) {
+      if (this.$props.multiple) {
+        const values = this.$props.value
+        const index = values.indexOf(value)
+        if (index > -1) {
+          values.splice(index, 1)
+        } else {
+          values.push(value)
+        }
+        this.$emit('input', values)
+        return
+      }
       this.$emit('input', value)
       this.$nextTick(() => {
         this.close()
@@ -332,7 +354,7 @@ export const Listbox = {
     focus(value) {
       this.activeItem.value = value
 
-      if (value === null) {
+      if (value == null) {
         return
       }
 
