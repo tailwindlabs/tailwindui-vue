@@ -119,7 +119,7 @@ export const ListboxList = {
                 this.context.close()
                 break
               case 'Tab':
-                e.preventDefault()
+                this.context.close()
                 break
               case 'Up':
               case 'ArrowUp':
