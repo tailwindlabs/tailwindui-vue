@@ -23,7 +23,7 @@ export const ListboxLabel = {
   data: () => ({
     id: generateId(),
   }),
-  mounted() {
+  created() {
     this.context.labelId.value = this.id
   },
   render(h) {
@@ -98,7 +98,7 @@ export const ListboxList = {
           tabindex: '-1',
           role: 'listbox',
           'aria-activedescendant': this.context.getActiveDescendant(),
-          'aria-labelledby': this.context.props.labelledby,
+          'aria-labelledby': this.context.labelId.value,
           'aria-multiselectable': this.context.props.multiple,
         },
         on: {
