@@ -60,7 +60,7 @@ export const ListboxButton = {
           type: 'button',
           'aria-haspopup': 'listbox',
           'aria-labelledby': `${this.context.labelId.value} ${this.id}`,
-          ...(this.context.isOpen.value ? { 'aria-expanded': 'true' } : {}),
+          'aria-expanded': this.context.isOpen.value ? 'true' : null,
         },
         on: {
           focus: () => {
@@ -295,7 +295,8 @@ export const Listbox = {
       this.typeahead.value = this.typeahead.value + value
 
       const [match] = this.optionRefs.value.find(([_value, ref]) => {
-        return ref.innerText.toLowerCase().startsWith(this.typeahead.value.toLowerCase())
+        return ref.innerText && ref.innerText.trim().toLowerCase()
+          .startsWith(this.typeahead.value.toLowerCase())
       }) || [null]
 
       if (match !== null) {
@@ -321,10 +322,14 @@ export const Listbox = {
     },
     open() {
       this.$data.isOpen.value = true
-      // Multi selects focus the first selected element when opened
-      const activeValue = this.$props.multiple
+      // Multi selects focus the first selected option when opened
+      let activeValue = this.$props.multiple
         ? this.$data.values.value.find(value => this.$props.value.includes(value))
         : this.$props.value
+      // When no item is selected, focus the first option
+      if (activeValue == null) {
+        activeValue = this.$data.values.value[0]
+      }
       this.focus(activeValue)
       this.$nextTick(() => {
         this.$data.listboxListRef.value().focus()

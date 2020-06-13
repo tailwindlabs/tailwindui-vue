@@ -3,8 +3,10 @@ import { Listbox, ListboxButton, ListboxLabel, ListboxList, ListboxOption } from
 
 window.HTMLElement.prototype.scrollIntoView = jest.fn()
 
+const OPTIONS = ['foo','bar','baz']
+
 describe('Listbox', () => {
-  const createWrapper = (selectedOption = 'foo', options = ['foo','bar','baz'], props = {}) => {
+  const createWrapper = ({ selectedOption = OPTIONS[0], options = OPTIONS, props = {} } = {}) => {
     const template = `
     <Listbox v-model="selectedOption" v-bind="props" v-slot="{ isOpen }">
       <ListboxLabel>Label</ListboxLabel>
@@ -59,7 +61,7 @@ describe('Listbox', () => {
     expect(list.element).toBeVisible()
     button.trigger('click')
     await wrapper.vm.$nextTick()
-    expect(button.attributes('aria-expanded')).toBeFalsy()
+    expect(button.attributes('aria-expanded')).toBeUndefined()
     expect(list.element).not.toBeVisible()
   })
 
@@ -72,40 +74,71 @@ describe('Listbox', () => {
     expect(list.attributes('aria-labelledby')).toBe(labelId)
   })
 
-  it('List sets first option as active when opened', async () => {
-    const wrapper = createWrapper()
-    wrapper.findComponent(ListboxButton).trigger('click')
-    await wrapper.vm.$nextTick()
-    const list = wrapper.findComponent(ListboxList)
-    const options = wrapper.findAllComponents(ListboxOption)
-    const firstOption = options.at(0)
-    expect(list.attributes('aria-activedescendant')).toBe(firstOption.attributes('id'))
+  describe('Option interaction', () => {
+    it('Selects value when option is clicked', async () => {
+      const wrapper = createWrapper()
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const options = wrapper.findAllComponents(ListboxOption)
+      options.at(1).trigger('click')
+      expect(wrapper.vm.$data.selectedOption).toBe(OPTIONS[1])
+    })
+  
+    it('Closes when option was selected', async () => {
+      const wrapper = createWrapper()
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      options.at(0).trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(list.element).not.toBeVisible()
+    })
   })
 
-  it('Scrolls first option into view when opened', async () => {
-    const wrapper = createWrapper()
-    wrapper.findComponent(ListboxButton).trigger('click')
-    await wrapper.vm.$nextTick()
-    const options = wrapper.findAllComponents(ListboxOption)
-    const firstOption = options.at(0)
-    expect(firstOption.element.scrollIntoView).toBeCalledWith({"block": "nearest"})
-  })
+  describe('Active options', () => {
+    it('Sets first option as active when opened with no selection', async () => {
+      const wrapper = createWrapper({ selectedOption: null })
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      expect(list.attributes('aria-activedescendant')).toBe(options.at(0).attributes('id'))
+    })
 
-  it('Sets correct option as activedescendant when hovered', async () => {
-    const wrapper = createWrapper()
-    const button = wrapper.findComponent(ListboxButton)
-    button.trigger('click')
-    await wrapper.vm.$nextTick()
-    const list = wrapper.findComponent(ListboxList)
-    const options = wrapper.findAllComponents(ListboxOption)
-    const option1 = options.at(0)
-    const option2 = options.at(1)
-    option2.trigger('mousemove')
-    await wrapper.vm.$nextTick()
-    expect(list.attributes('aria-activedescendant')).toBe(option2.attributes('id'))
-    option1.trigger('mousemove')
-    await wrapper.vm.$nextTick()
-    expect(list.attributes('aria-activedescendant')).toBe(option1.attributes('id'))
+    it('Sets selected option as active when opened', async () => {
+      const wrapper = createWrapper({ selectedOption: OPTIONS[2] })
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      expect(list.attributes('aria-activedescendant')).toBe(options.at(2).attributes('id'))
+    })
+  
+    it('Scrolls selected option into view when opened', async () => {
+      const wrapper = createWrapper({ selectedOption: OPTIONS[2] })
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const options = wrapper.findAllComponents(ListboxOption)
+      expect(options.at(2).element.scrollIntoView).toBeCalledWith({"block": "nearest"})
+    })
+  
+    it('Sets correct option as activedescendant when option is hovered', async () => {
+      const wrapper = createWrapper()
+      const button = wrapper.findComponent(ListboxButton)
+      button.trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      const option1 = options.at(0)
+      const option2 = options.at(1)
+      option2.trigger('mousemove')
+      await wrapper.vm.$nextTick()
+      expect(list.attributes('aria-activedescendant')).toBe(option2.attributes('id'))
+      option1.trigger('mousemove')
+      await wrapper.vm.$nextTick()
+      expect(list.attributes('aria-activedescendant')).toBe(option1.attributes('id'))
+    })
   })
 
   describe('Keyboard navigation', () => {
@@ -192,6 +225,109 @@ describe('Listbox', () => {
       list.trigger('keydown', { key: 'Up'})
       await wrapper.vm.$nextTick()
       expect(list.attributes('aria-activedescendant')).toBe(option3.attributes('id'))
+    })
+
+    it('"Spacebar" selects active option', async () => {
+      const wrapper = createWrapper()
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const options = wrapper.findAllComponents(ListboxOption)
+      options.at(1).trigger('mousemove')
+      const list = wrapper.findComponent(ListboxList)
+      list.trigger('keydown', { key: 'Spacebar'})
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.$data.selectedOption).toBe(OPTIONS[1])
+    })
+
+    it('"Enter" selects active option', async () => {
+      const wrapper = createWrapper()
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const options = wrapper.findAllComponents(ListboxOption)
+      options.at(1).trigger('mousemove')
+      const list = wrapper.findComponent(ListboxList)
+      list.trigger('keydown', { key: 'Enter'})
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.$data.selectedOption).toBe(OPTIONS[1])
+    })
+
+    it('Typeahead focuses matching option', async () => {
+      const wrapper = createWrapper()
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      OPTIONS[2].split('').forEach(key => {
+        list.trigger('keydown', { key })
+      })
+      await wrapper.vm.$nextTick()
+      const options = wrapper.findAllComponents(ListboxOption)
+      expect(list.attributes('aria-activedescendant')).toBe(options.at(2).attributes('id'))
+    })
+  })
+
+  describe('Multiselect', () => {
+    it('List has aria-multiselectable', async () => {
+      const wrapper = createWrapper({
+        selectedOption: [],
+        props: { multiple: true }
+      })
+      const list = wrapper.findComponent(ListboxList)
+      expect(list.attributes('aria-multiselectable')).toBe('true')
+    })
+
+    it('Does not close when option is selected', async () => {
+      const wrapper = createWrapper({
+        selectedOption: [],
+        props: { multiple: true }
+      })
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      options.at(0).trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(list.element).toBeVisible()
+    })
+
+    it('Can select multiple options', async () => {
+      const wrapper = createWrapper({
+        selectedOption: [],
+        props: { multiple: true }
+      })
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      options.at(0).trigger('click')
+      options.at(1).trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.$data.selectedOption).toEqual([OPTIONS[0], OPTIONS[1]])
+    })
+
+    it('Deselects selected option on click', async () => {
+      const wrapper = createWrapper({
+        selectedOption: [OPTIONS[0]],
+        props: { multiple: true }
+      })
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      options.at(0).trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.$data.selectedOption).toEqual([])
+    })
+
+    it('Sets first selected option as active when opened', async () => {
+      const wrapper = createWrapper({
+        selectedOption: [OPTIONS[1],OPTIONS[2]],
+        props: { multiple: true }
+      })
+      wrapper.findComponent(ListboxButton).trigger('click')
+      await wrapper.vm.$nextTick()
+      const list = wrapper.findComponent(ListboxList)
+      const options = wrapper.findAllComponents(ListboxOption)
+      expect(list.attributes('aria-activedescendant')).toBe(options.at(1).attributes('id'))
     })
   })
 })
