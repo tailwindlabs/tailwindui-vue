@@ -9,7 +9,9 @@ function generateId() {
 }
 
 function defaultSlot(parent, scope) {
-  return parent.$slots.default ? parent.$slots.default : parent.$scopedSlots.default(scope)
+  return parent.$slots.default
+    ? parent.$slots.default
+    : parent.$scopedSlots.default(scope)
 }
 
 function isString(value) {
@@ -120,18 +122,23 @@ export const ListboxList = {
                 this.context.close()
                 break
               case 'Tab':
+                if (e.shiftKey) {
+                  e.preventDefault()
+                }
                 this.context.close()
                 break
               case 'Up':
               case 'ArrowUp':
                 e.preventDefault()
-                indexToFocus = focusedIndex - 1 < 0 ? values.length - 1 : focusedIndex - 1
+                indexToFocus =
+                  focusedIndex - 1 < 0 ? values.length - 1 : focusedIndex - 1
                 this.context.focus(values[indexToFocus])
                 break
               case 'Down':
               case 'ArrowDown':
                 e.preventDefault()
-                indexToFocus = focusedIndex + 1 > values.length - 1 ? 0 : focusedIndex + 1
+                indexToFocus =
+                  focusedIndex + 1 > values.length - 1 ? 0 : focusedIndex + 1
                 this.context.focus(values[indexToFocus])
                 break
               case 'Spacebar':
@@ -140,12 +147,16 @@ export const ListboxList = {
                 if (this.context.typeahead.value !== '') {
                   this.context.type(' ')
                 } else {
-                  this.context.select(this.context.activeItem.value || this.context.props.value)
+                  this.context.select(
+                    this.context.activeItem.value || this.context.props.value
+                  )
                 }
                 break
               case 'Enter':
                 e.preventDefault()
-                this.context.select(this.context.activeItem.value || this.context.props.value)
+                this.context.select(
+                  this.context.activeItem.value || this.context.props.value
+                )
                 break
               default:
                 if (!(isString(e.key) && e.key.length === 1)) {
@@ -202,7 +213,11 @@ export const ListboxOption = {
         attrs: {
           id: this.id,
           role: 'option',
-          'aria-selected': isSelected ? 'true' : (this.context.props.multiple ? 'false' : null),
+          'aria-selected': isSelected
+            ? 'true'
+            : this.context.props.multiple
+            ? 'false'
+            : null,
         },
         on: {
           click: () => {
@@ -295,8 +310,13 @@ export const Listbox = {
       this.typeahead.value = this.typeahead.value + value
 
       const [match] = this.optionRefs.value.find(([_value, ref]) => {
-        return ref.innerText && ref.innerText.trim().toLowerCase()
-          .startsWith(this.typeahead.value.toLowerCase())
+        return (
+          ref.innerText &&
+          ref.innerText
+            .trim()
+            .toLowerCase()
+            .startsWith(this.typeahead.value.toLowerCase())
+        )
       }) || [null]
 
       if (match !== null) {
@@ -313,9 +333,11 @@ export const Listbox = {
       this.optionRefs.value = [...this.optionRefs.value, [value, optionRef]]
     },
     unregisterOptionRef(value) {
-      this.optionRefs.value = this.optionRefs.value.filter(([candidateValue]) => {
-        return candidateValue !== value
-      })
+      this.optionRefs.value = this.optionRefs.value.filter(
+        ([candidateValue]) => {
+          return candidateValue !== value
+        }
+      )
     },
     toggle() {
       this.$data.isOpen.value ? this.close() : this.open()
@@ -324,7 +346,9 @@ export const Listbox = {
       this.$data.isOpen.value = true
       // Multi selects focus the first selected option when opened
       let activeValue = this.$props.multiple
-        ? this.$data.values.value.find(value => this.$props.value.includes(value))
+        ? this.$data.values.value.find((value) =>
+            this.$props.value.includes(value)
+          )
         : this.$props.value
       // When no item is selected, focus the first option
       if (activeValue == null) {
@@ -366,7 +390,9 @@ export const Listbox = {
       this.$nextTick(() => {
         this.listboxListRef
           .value()
-          .children[this.values.value.indexOf(this.activeItem.value)].scrollIntoView({
+          .children[
+            this.values.value.indexOf(this.activeItem.value)
+          ].scrollIntoView({
             block: 'nearest',
           })
       })
