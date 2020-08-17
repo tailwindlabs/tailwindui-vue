@@ -141,7 +141,6 @@ export const ListboxList = {
                   focusedIndex + 1 > values.length - 1 ? 0 : focusedIndex + 1
                 this.context.focus(values[indexToFocus])
                 break
-              case 'Spacebar':
               case ' ':
                 e.preventDefault()
                 if (this.context.typeahead.value !== '') {

@@ -264,7 +264,7 @@ describe('Listbox', () => {
       const options = wrapper.findAllComponents(ListboxOption)
       options.at(1).trigger('mousemove')
       const list = wrapper.findComponent(ListboxList)
-      list.trigger('keydown', { key: 'Spacebar' })
+      list.trigger('keydown', { key: ' ' })
       await wrapper.vm.$nextTick()
       expect(wrapper.vm.$data.selectedOption).toBe(OPTIONS[1])
     })
