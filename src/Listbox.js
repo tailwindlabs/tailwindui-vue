@@ -369,13 +369,12 @@ export const Listbox = {
     select(value) {
       if (this.$props.multiple) {
         const values = this.$props.value
-        const index = values.indexOf(value)
-        if (index > -1) {
-          values.splice(index, 1)
-        } else {
-          values.push(value)
-        }
-        this.$emit('input', values)
+        // If a value is already selected we need to deselect it,
+        // else we need to add it to the list of selected values
+        const newValues = values.includes(value)
+          ? values.filter((v) => v !== value)
+          : [...values, value]
+        this.$emit('input', newValues)
         return
       }
       this.$emit('input', value)
