@@ -202,10 +202,17 @@ export const ListboxOption = {
     this.context.unregisterOptionRef(this.value)
   },
   render(h) {
+    const isMultilistbox = this.context.props.multiple
     const isActive = this.context.activeItem.value === this.value
-    const isSelected = this.context.props.multiple
+    const isSelected = isMultilistbox
       ? this.context.props.value.includes(this.value)
       : this.context.props.value === this.value
+    let ariaSelected
+    if (isSelected) {
+      ariaSelected = 'true'
+    } else if (isMultilistbox) {
+      ariaSelected = 'false'
+    }
 
     return h(
       'li',
@@ -213,11 +220,7 @@ export const ListboxOption = {
         attrs: {
           id: this.id,
           role: 'option',
-          'aria-selected': isSelected
-            ? 'true'
-            : this.context.props.multiple
-            ? 'false'
-            : null,
+          'aria-selected': ariaSelected,
         },
         on: {
           click: () => {
