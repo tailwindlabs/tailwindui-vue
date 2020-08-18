@@ -347,6 +347,7 @@ export const Listbox = {
     open() {
       this.$data.isOpen.value = true
       // Multi selects focus the first selected option when opened
+      // https://www.w3.org/TR/wai-aria-practices/#listbox_kbd_interaction
       let activeValue = this.$props.multiple
         ? this.$data.values.value.find((value) =>
             this.$props.value.includes(value)
