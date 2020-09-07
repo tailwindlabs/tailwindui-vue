@@ -1,3 +1,4 @@
+// @ts-nocheck we will re-enable this soon
 import debounce from 'debounce'
 
 const ListboxSymbol = Symbol('Listbox')
@@ -8,11 +9,11 @@ function generateId() {
   return `tailwind-ui-listbox-id-${++id}`
 }
 
-function defaultSlot(parent, scope) {
+function defaultSlot(parent: any, scope: any) {
   return parent.$slots.default ? parent.$slots.default : parent.$scopedSlots.default(scope)
 }
 
-function isString(value) {
+function isString(value: any): value is string {
   return typeof value === 'string' || value instanceof String
 }
 
@@ -86,7 +87,7 @@ export const ListboxList = {
   },
   render(h) {
     const children = defaultSlot(this, {})
-    const values = children.map((node) => node.componentOptions.propsData.value)
+    const values = children.map(node => node.componentOptions.propsData.value)
     this.context.values.value = values
     const focusedIndex = values.indexOf(this.context.activeItem.value)
 
@@ -101,7 +102,7 @@ export const ListboxList = {
           'aria-labelledby': this.context.props.labelledby,
         },
         on: {
-          focusout: (e) => {
+          focusout: e => {
             if (e.relatedTarget === this.context.listboxButtonRef.value()) {
               return
             }
@@ -110,7 +111,7 @@ export const ListboxList = {
           mouseleave: () => {
             this.context.activeItem.value = null
           },
-          keydown: (e) => {
+          keydown: e => {
             let indexToFocus
             switch (e.key) {
               case 'Esc':
@@ -228,7 +229,7 @@ export const ListboxOption = {
 
 export const Listbox = {
   props: ['value'],
-  data: (vm) => ({
+  data: vm => ({
     typeahead: { value: '' },
     listboxButtonRef: { value: null },
     listboxListRef: { value: null },
@@ -297,7 +298,7 @@ export const Listbox = {
 
       this.clearTypeahead()
     },
-    clearTypeahead: debounce(function () {
+    clearTypeahead: debounce(function() {
       this.typeahead.value = ''
     }, 500),
     registerOptionRef(value, optionRef) {
