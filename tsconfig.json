@@ -18,8 +18,9 @@
       "@tailwindui/vue": ["src"],
       "*": ["src/*", "node_modules/*"]
     },
+    "types": ["@types/node", "vue", "@types/jest"],
     "esModuleInterop": true,
-    "target": "esnext",
+    "target": "es5",
     "allowJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -27,5 +28,5 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

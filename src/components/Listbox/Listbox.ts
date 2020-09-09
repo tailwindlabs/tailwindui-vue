@@ -9,11 +9,11 @@ function generateId() {
   return `tailwind-ui-listbox-id-${++id}`
 }
 
-function defaultSlot(parent: any, scope: any) {
+function defaultSlot(parent, scope) {
   return parent.$slots.default ? parent.$slots.default : parent.$scopedSlots.default(scope)
 }
 
-function isString(value: any): value is string {
+function isString(value) {
   return typeof value === 'string' || value instanceof String
 }
 
@@ -270,7 +270,7 @@ export const Listbox = {
   },
   methods: {
     getActiveDescendant() {
-      const [_value, id] = this.optionIds.value.find(([value]) => {
+      const [, id] = this.optionIds.value.find(([value]) => {
         return value === this.activeItem.value
       }) || [null, null]
 
@@ -288,7 +288,7 @@ export const Listbox = {
     type(value) {
       this.typeahead.value = this.typeahead.value + value
 
-      const [match] = this.optionRefs.value.find(([_value, ref]) => {
+      const [match] = this.optionRefs.value.find(([, ref]) => {
         return ref.innerText.toLowerCase().startsWith(this.typeahead.value.toLowerCase())
       }) || [null]
 
