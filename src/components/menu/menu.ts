@@ -8,10 +8,10 @@ import {
   onUnmounted,
   computed,
   cloneVNode,
+  nextTick,
   InjectionKey,
   Ref,
 } from 'vue'
-import { disposables } from '../../utils/disposables'
 import { match } from '../../utils/match'
 import { useId } from '../../hooks/use-id'
 
@@ -84,12 +84,6 @@ function useMenuContext(component: string) {
   return context
 }
 
-function useDisposables() {
-  const d = disposables()
-  onUnmounted(d.dispose)
-  return d
-}
-
 export const Menu = defineComponent({
   props: { as: { type: [Object, String], default: 'div' } },
   setup(props, { slots }) {
@@ -99,8 +93,6 @@ export const Menu = defineComponent({
     const items = ref<StateDefinition['items']['value']>([])
     const searchQuery = ref<StateDefinition['searchQuery']['value']>('')
     const activeItemIndex = ref<StateDefinition['activeItemIndex']['value']>(null)
-
-    const d = useDisposables()
 
     function calculateActiveItemIndex(focus: Focus, id?: string) {
       if (items.value.length <= 0) return null
@@ -209,12 +201,12 @@ export const Menu = defineComponent({
 
         if (!itemsRef.value?.contains(event.target as HTMLElement)) {
           api.closeMenu()
-          d.nextFrame(() => buttonRef.value?.focus())
+          nextTick(() => buttonRef.value?.focus())
         }
       }
 
       window.addEventListener('pointerdown', handler)
-      d.add(() => window.removeEventListener('pointerdown', handler))
+      onUnmounted(() => window.removeEventListener('pointerdown', handler))
     })
 
     // @ts-expect-error Types of property 'dataRef' are incompatible.
@@ -267,7 +259,6 @@ export const MenuButton = defineComponent({
   setup() {
     const api = useMenuContext('MenuButton')
     const id = `tailwindui-menu-button-${useId()}`
-    const d = useDisposables()
 
     function handleKeyDown(event: KeyboardEvent) {
       switch (event.key) {
@@ -278,7 +269,7 @@ export const MenuButton = defineComponent({
         case Key.ArrowDown:
           event.preventDefault()
           api.openMenu()
-          d.nextFrame(() => {
+          nextTick(() => {
             api.itemsRef.value?.focus()
             api.goToItem(Focus.FirstItem)
           })
@@ -287,7 +278,7 @@ export const MenuButton = defineComponent({
         case Key.ArrowUp:
           event.preventDefault()
           api.openMenu()
-          d.nextFrame(() => {
+          nextTick(() => {
             api.itemsRef.value?.focus()
             api.goToItem(Focus.LastItem)
           })
@@ -303,7 +294,7 @@ export const MenuButton = defineComponent({
 
     function handlePointerUp() {
       api.toggleMenu()
-      d.nextFrame(() => api.itemsRef.value?.focus())
+      nextTick(() => api.itemsRef.value?.focus())
     }
 
     function handleFocus() {
@@ -354,11 +345,10 @@ export const MenuItems = defineComponent({
   setup() {
     const api = useMenuContext('MenuItems')
     const id = `tailwindui-menu-items-${useId()}`
-    const d = useDisposables()
-    const searchDisposables = useDisposables()
+    const searchDebounce = ref<ReturnType<typeof setTimeout> | null>(null)
 
     function handleKeyDown(event: KeyboardEvent) {
-      searchDisposables.dispose()
+      if (searchDebounce.value) clearTimeout(searchDebounce.value)
 
       switch (event.key) {
         // Ref: https://www.w3.org/TR/wai-aria-practices-1.2/#keyboard-interaction-12
@@ -368,7 +358,7 @@ export const MenuItems = defineComponent({
           if (api.activeItemIndex.value !== null) {
             const { id } = api.items.value[api.activeItemIndex.value]
             document.getElementById(id)?.click()
-            d.nextFrame(() => api.buttonRef.value?.focus())
+            nextTick(() => api.buttonRef.value?.focus())
           }
           break
 
@@ -388,7 +378,7 @@ export const MenuItems = defineComponent({
 
         case Key.Escape:
           api.closeMenu()
-          d.nextFrame(() => api.buttonRef.value?.focus())
+          nextTick(() => api.buttonRef.value?.focus())
           break
 
         case Key.Tab:
@@ -397,7 +387,7 @@ export const MenuItems = defineComponent({
         default:
           if (event.key.length === 1) {
             api.search(event.key)
-            searchDisposables.setTimeout(() => api.clearSearch(), 350)
+            searchDebounce.value = setTimeout(() => api.clearSearch(), 350)
           }
           break
       }
@@ -421,7 +411,6 @@ export const MenuItem = defineComponent({
   },
   setup(props, { slots }) {
     const api = useMenuContext('MenuItem')
-    const d = useDisposables()
     const id = `tailwindui-menu-item-${useId()}`
     const { disabled, class: defaultClass, className = defaultClass } = props
 
@@ -468,7 +457,7 @@ export const MenuItem = defineComponent({
       if (disabled) return
       event.preventDefault()
       api.closeMenu()
-      d.nextFrame(() => api.buttonRef.value?.focus())
+      nextTick(() => api.buttonRef.value?.focus())
     }
 
     function handleClick(event: MouseEvent) {

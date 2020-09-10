@@ -1,5 +1,5 @@
+import { nextTick } from 'vue'
 import { fireEvent } from '@testing-library/dom'
-import { disposables } from '../utils/disposables'
 
 export const Keys: Record<string, Partial<KeyboardEvent>> = {
   Space: { key: ' ' },
@@ -34,7 +34,6 @@ export async function type(events: Partial<KeyboardEvent>[]) {
     if (document.activeElement === null) return expect(document.activeElement).not.toBe(null)
 
     const element = document.activeElement
-    const d = disposables()
 
     events.forEach(event => {
       fireEvent.keyDown(element, event)
@@ -43,7 +42,7 @@ export async function type(events: Partial<KeyboardEvent>[]) {
     // We don't want to actually wait in our tests, so let's advance
     jest.runAllTimers()
 
-    await new Promise(d.nextFrame)
+    await new Promise<void>(nextTick)
   } catch (err) {
     if (Error.captureStackTrace) Error.captureStackTrace(err, type)
     throw err
@@ -60,15 +59,13 @@ export async function click(element: Document | Element | Window | null) {
   try {
     if (element === null) return expect(element).not.toBe(null)
 
-    const d = disposables()
-
     fireEvent.pointerDown(element)
     fireEvent.mouseDown(element)
     fireEvent.pointerUp(element)
     fireEvent.mouseUp(element)
     fireEvent.click(element)
 
-    await new Promise(d.nextFrame)
+    await new Promise<void>(nextTick)
   } catch (err) {
     if (Error.captureStackTrace) Error.captureStackTrace(err, click)
     throw err
@@ -79,11 +76,9 @@ export async function focus(element: Document | Element | Window | null) {
   try {
     if (element === null) return expect(element).not.toBe(null)
 
-    const d = disposables()
-
     fireEvent.focus(element)
 
-    await new Promise(d.nextFrame)
+    await new Promise<void>(nextTick)
   } catch (err) {
     if (Error.captureStackTrace) Error.captureStackTrace(err, focus)
     throw err
@@ -94,11 +89,9 @@ export async function mouseMove(element: Document | Element | Window | null) {
   try {
     if (element === null) return expect(element).not.toBe(null)
 
-    const d = disposables()
-
     fireEvent.mouseMove(element)
 
-    await new Promise(d.nextFrame)
+    await new Promise<void>(nextTick)
   } catch (err) {
     if (Error.captureStackTrace) Error.captureStackTrace(err, mouseMove)
     throw err
@@ -109,13 +102,11 @@ export async function hover(element: Document | Element | Window | null) {
   try {
     if (element === null) return expect(element).not.toBe(null)
 
-    const d = disposables()
-
     fireEvent.pointerOver(element)
     fireEvent.pointerEnter(element)
     fireEvent.mouseOver(element)
 
-    await new Promise(d.nextFrame)
+    await new Promise<void>(nextTick)
   } catch (err) {
     if (Error.captureStackTrace) Error.captureStackTrace(err, hover)
     throw err
@@ -126,14 +117,12 @@ export async function unHover(element: Document | Element | Window | null) {
   try {
     if (element === null) return expect(element).not.toBe(null)
 
-    const d = disposables()
-
     fireEvent.pointerOut(element)
     fireEvent.pointerLeave(element)
     fireEvent.mouseOut(element)
     fireEvent.mouseLeave(element)
 
-    await new Promise(d.nextFrame)
+    await new Promise<void>(nextTick)
   } catch (err) {
     if (Error.captureStackTrace) Error.captureStackTrace(err, unHover)
     throw err
