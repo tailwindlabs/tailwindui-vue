@@ -1603,10 +1603,10 @@
     lodash "^4.17.15"
     pretty "^2.0.0"
 
-"@vue/test-utils@^2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/@vue/test-utils/-/test-utils-2.0.0-beta.3.tgz#6dcf4a98e0b379918ca590245ed8e249ea36ade4"
-  integrity sha512-fPHEeF/PYTNtTfx/t/KpvSek3Gv5npcufiCqu3Ghlxzg8r36dGIPnLXPZLdVB/0zHUezx48sWZNH1PuxoWwHBw==
+"@vue/test-utils@^2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.yarnpkg.com/@vue/test-utils/-/test-utils-2.0.0-beta.4.tgz#7d275ca5d4e54ae32a9da4f03c1da6fdc3ce30e4"
+  integrity sha512-uW3GdeEEQFTdRoYmBxxHs0ENpbt8jB6OeQ8JCiTuPQecP51dI8IcGXDJhzv7bjWG6Ej+KjaTxKEmEikCyhLWtQ==
 
 abab@^2.0.0:
   version "2.0.4"
@@ -7232,10 +7232,10 @@ table@^5.2.3:
     slice-ansi "^2.1.0"
     string-width "^3.0.0"
 
-tailwindcss@^1.8.6:
-  version "1.8.6"
-  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-1.8.6.tgz#7ec08777d6cc50bd79e9bedf381f1f10f132bdd5"
-  integrity sha512-iUbDjwkBdbY+9hlVfuHRXJN3lC7h4Fc4Vz/YqjMMeL0AeCH73MMgVDmto0ulCzh1KM1sv0VV9WmV0bcDMgw5Tw==
+tailwindcss@^1.8.8:
+  version "1.8.8"
+  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-1.8.8.tgz#f877fb8f001a6f1a7717431392b769952b66406d"
+  integrity sha512-MCaTFA+ae278rYeB0UTJAkWJMW5eYMMO6/XXBL0oo+SKuZCM4uCFskroHbMFvQSoA96sslFX2+tCPDOv1T7Tbw==
   dependencies:
     "@fullhuman/postcss-purgecss" "^2.1.2"
     autoprefixer "^9.4.5"
