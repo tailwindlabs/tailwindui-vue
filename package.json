@@ -31,6 +31,7 @@
     "trailingComma": "es5"
   },
   "devDependencies": {
+    "@popperjs/core": "^2.4.4",
     "@tailwindcss/ui": "^0.6.0",
     "@testing-library/vue": "^5.0.4",
     "@types/debounce": "^1.2.0",

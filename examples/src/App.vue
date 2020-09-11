@@ -12,7 +12,8 @@
       </a>
     </header>
     <main class="flex-1 overflow-auto bg-gray-50">
-      <MenuWithTailwind />
+      <MenuWithPopper />
+      <!-- <MenuWithTailwind /> -->
       <KeyCaster />
     </main>
   </div>
@@ -20,11 +21,13 @@
 
 <script>
 import KeyCaster from './KeyCaster.vue'
+import MenuWithPopper from './components/menu-with-popper.vue'
 import MenuWithTailwind from './components/menu-with-tailwind.vue'
 
 export default {
   name: 'App',
   components: {
+    MenuWithPopper,
     MenuWithTailwind,
     KeyCaster,
   },
