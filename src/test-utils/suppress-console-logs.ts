@@ -3,15 +3,15 @@ type FunctionPropertyNames<T> = {
 }[keyof T] &
   string
 
-export function suppressConsoleLogs(
-  cb: () => void,
+export function suppressConsoleLogs<T extends unknown[]>(
+  cb: (...args: T) => void,
   type: FunctionPropertyNames<typeof global.console> = 'warn'
 ) {
-  return () => {
+  return (...args: T) => {
     const spy = jest.spyOn(global.console, type).mockImplementation(jest.fn())
 
-    return new Promise((resolve, reject) => {
-      Promise.resolve(cb()).then(resolve, reject)
+    return new Promise<void>((resolve, reject) => {
+      Promise.resolve(cb(...args)).then(resolve, reject)
     }).finally(() => spy.mockRestore())
   }
 }

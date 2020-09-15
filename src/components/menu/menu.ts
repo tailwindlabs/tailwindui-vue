@@ -213,11 +213,11 @@ export const Menu = defineComponent({
     provide(MenuContext, api)
 
     return () => {
-      const slot = { show: menuState.value === MenuStates.Open }
+      const slot = { open: menuState.value === MenuStates.Open }
       const { as } = props
 
-      if (slots.render) {
-        const [menu, ...other] = slots.render(slot)
+      if (as === 'template') {
+        const [menu, ...other] = slots.default?.(slot) ?? []
         if (other.length > 0) throw new Error('You should only render 1 child')
         return cloneVNode(menu, props)
       }
@@ -232,7 +232,7 @@ export const MenuButton = defineComponent({
   render() {
     const api = useMenuContext('MenuButton')
 
-    const slot = { show: api.menuState.value === MenuStates.Open }
+    const slot = { open: api.menuState.value === MenuStates.Open }
     const { as, ...passThroughProps } = this.$props
     const propsWeControl = {
       ref: 'el',
@@ -248,8 +248,8 @@ export const MenuButton = defineComponent({
     }
     const allProps = { ...passThroughProps, ...propsWeControl }
 
-    if (this.$slots.render) {
-      const [button, ...other] = this.$slots.render(slot)
+    if (as === 'template') {
+      const [button, ...other] = this.$slots.default?.(slot) ?? []
       if (other.length > 0) throw new Error('You should only render 1 child')
       return cloneVNode(button, allProps)
     }
@@ -313,13 +313,19 @@ export const MenuButton = defineComponent({
 })
 
 export const MenuItems = defineComponent({
-  props: { as: { type: [Object, String], default: 'div' } },
+  props: {
+    as: { type: [Object, String], default: 'div' },
+    static: { type: Boolean, default: false },
+  },
   render() {
     const api = useMenuContext('MenuItems')
-    if (api.menuState.value === MenuStates.Closed) return null
 
-    const slot = { show: true }
-    const { as, ...passThroughProps } = this.$props
+    // `static` is a reserved keyword, therefore aliasing it...
+    const { as, static: isStatic, ...passThroughProps } = this.$props
+
+    if (!isStatic && api.menuState.value === MenuStates.Closed) return null
+
+    const slot = { open: api.menuState.value === MenuStates.Open }
     const propsWeControl = {
       'aria-activedescendant':
         api.activeItemIndex.value === null
@@ -334,8 +340,8 @@ export const MenuItems = defineComponent({
     }
     const allProps = { ...passThroughProps, ...propsWeControl }
 
-    if (this.$slots.render) {
-      const [items, ...other] = this.$slots.render(slot)
+    if (as === 'template') {
+      const [items, ...other] = this.$slots.default?.(slot) ?? []
       if (other.length > 0) throw new Error('You should only render 1 child')
       return cloneVNode(items, allProps)
     }
@@ -403,7 +409,7 @@ export const MenuItems = defineComponent({
 
 export const MenuItem = defineComponent({
   props: {
-    as: { type: [Object, String], default: 'div' },
+    as: { type: [Object, String], default: 'template' },
     disabled: { type: Boolean, default: false },
     class: { type: [String, Function], required: false },
     className: { type: [String, Function], required: false },
@@ -473,8 +479,8 @@ export const MenuItem = defineComponent({
         role: 'menuitem',
         tabIndex: -1,
         class: resolvePropValue(className, slot),
-        disabled,
-        'aria-disabled': disabled,
+        disabled: disabled === true ? disabled : undefined,
+        'aria-disabled': disabled === true ? disabled : undefined,
         onClick: handleClick,
         onFocus: handleFocus,
         onMouseMove: handleMouseMove,
@@ -484,8 +490,8 @@ export const MenuItem = defineComponent({
       }
       const allProps = { ...passThroughProps, ...propsWeControl }
 
-      if (slots.render) {
-        const [item, ...other] = slots.render(slot)
+      if (as === 'template') {
+        const [item, ...other] = slots.default?.(slot) ?? []
         if (other.length > 0) throw new Error('You should only render 1 child')
         return cloneVNode(item, allProps)
       }
@@ -500,9 +506,3 @@ function resolvePropValue<TProperty, TBag>(property: TProperty, bag: TBag) {
   if (typeof property === 'function') return property(bag)
   return property
 }
-
-// Ugh?
-Menu['Menu'] = Menu
-Menu['Menu.Button'] = MenuButton
-Menu['Menu.Items'] = MenuItems
-Menu['Menu.Item'] = MenuItem

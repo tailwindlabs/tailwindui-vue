@@ -3,7 +3,7 @@
     <div class="relative inline-block text-left">
       <Menu>
         <span class="inline-flex rounded-md shadow-sm">
-          <Menu.Button
+          <MenuButton
             ref="reference"
             class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-50 active:text-gray-800"
           >
@@ -15,7 +15,7 @@
                 clipRule="evenodd"
               />
             </svg>
-          </Menu.Button>
+          </MenuButton>
         </span>
 
         <transition
@@ -26,7 +26,7 @@
           leave-from-class="transform scale-100 opacity-100"
           leave-to-class="transform scale-95 opacity-0"
         >
-          <Menu.Items
+          <MenuItems
             ref="popper"
             class="absolute right-0 w-56 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none"
           >
@@ -36,19 +36,21 @@
             </div>
 
             <div class="py-1">
-              <Menu.Item as="a" :className="resolveClass" href="#account-settings">
+              <MenuItem as="a" :className="resolveClass" href="#account-settings">
                 Account Settings
-              </Menu.Item>
-              <Menu.Item as="a" :className="resolveClass" href="#support">Support</Menu.Item>
-              <Menu.Item as="a" :className="resolveClass" disabled href="#new-feature">
+              </MenuItem>
+              <MenuItem v-slot="data">
+                <a href="#support" :class="resolveClass(data)">Support</a>
+              </MenuItem>
+              <MenuItem as="a" :className="resolveClass" disabled href="#new-feature">
                 New feature (soon)
-              </Menu.Item>
-              <Menu.Item as="a" :className="resolveClass" href="#license">License</Menu.Item>
+              </MenuItem>
+              <MenuItem as="a" :className="resolveClass" href="#license">License</MenuItem>
             </div>
             <div class="py-1">
-              <Menu.Item as="a" :className="resolveClass" href="#sign-out">Sign out</Menu.Item>
+              <MenuItem as="a" :className="resolveClass" href="#sign-out">Sign out</MenuItem>
             </div>
-          </Menu.Items>
+          </MenuItems>
         </transition>
       </Menu>
     </div>
@@ -59,7 +61,7 @@
 import { defineComponent, h, ref, onMounted, watchEffect, watch } from 'vue'
 
 import { createPopper } from '@popperjs/core'
-import { Menu } from '@tailwindui/vue'
+import { Menu, MenuButton, MenuItems, MenuItem } from '@tailwindui/vue'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -87,7 +89,7 @@ function usePopper(options) {
 }
 
 export default {
-  components: { ...Menu },
+  components: { Menu, MenuButton, MenuItems, MenuItem },
   setup(props, context) {
     const [reference, popper] = usePopper({
       placement: 'bottom-end',

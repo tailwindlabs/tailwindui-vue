@@ -59,30 +59,16 @@ function getMenuItems(): HTMLElement[] {
   return Array.from(document.querySelectorAll('[role="menuitem"]'))
 }
 
-describe('safe guards', () => {
-  it(
-    'should error when we are using a <MenuButton /> without a parent <Menu />',
-    suppressConsoleLogs(() => {
-      expect(() => render(MenuButton)).toThrowErrorMatchingInlineSnapshot(
-        `"<MenuButton /> is missing a parent <Menu /> component."`
-      )
-    })
-  )
-
-  it(
-    'should error when we are using a <MenuItems /> without a parent <Menu />',
-    suppressConsoleLogs(() => {
-      expect(() => render(MenuItems)).toThrowErrorMatchingInlineSnapshot(
-        `"<MenuItems /> is missing a parent <Menu /> component."`
-      )
-    })
-  )
-
-  it(
-    'should error when we are using a <MenuItem /> without a parent <Menu />',
-    suppressConsoleLogs(() => {
-      expect(() => render(MenuItem)).toThrowErrorMatchingInlineSnapshot(
-        `"<MenuItem /> is missing a parent <Menu /> component."`
+describe('Safe guards', () => {
+  it.each([
+    ['MenuButton', MenuButton],
+    ['MenuItems', MenuItems],
+    ['MenuItem', MenuItem],
+  ])(
+    'should error when we are using a <%s /> without a parent <Menu />',
+    suppressConsoleLogs((name, component) => {
+      expect(() => render(component)).toThrowError(
+        `<${name} /> is missing a parent <Menu /> component.`
       )
     })
   )
@@ -107,374 +93,404 @@ describe('safe guards', () => {
   })
 })
 
-it('should be possible to render a Menu using a default render prop', async () => {
-  renderTemplate(`
-    <Menu #default="{ show }">
-      <MenuButton>Trigger</MenuButton>
-      <MenuItems ng-if="show">
-        <MenuItem>Item A</MenuItem>
-        <MenuItem>Item B</MenuItem>
-        <MenuItem>Item C</MenuItem>
-      </MenuItems>
-    </Menu>
-  `)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Closed })
-
-  await click(getMenuButton())
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Open })
-})
-
-it('should be possible to render a Menu using a render prop', async () => {
-  renderTemplate(`
-    <Menu #render="{ show }">
-      <div>
-        <MenuButton>Trigger</MenuButton>
-        <MenuItems ng-if="show">
-          <MenuItem>Item A</MenuItem>
-          <MenuItem>Item B</MenuItem>
-          <MenuItem>Item C</MenuItem>
-        </MenuItems>
-      </div>
-    </Menu>
-  `)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Closed })
-
-  await click(getMenuButton())
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Open })
-})
-
-it(
-  'should yell when we render a Menu using a render prop that contain multiple children',
-  suppressConsoleLogs(() => {
-    expect(() =>
+describe('Rendering', () => {
+  describe('Menu', () => {
+    it('should be possible to render a Menu using a default render prop', async () => {
       renderTemplate(`
-        <Menu #render="{ show }">
-          <MenuButton>Trigger</MenuButton>
-          <MenuItems ng-if="show">
+        <Menu v-slot="{ open }">
+          <MenuButton>Trigger {{ open ? "visible" : "hidden" }}</MenuButton>
+          <MenuItems>
             <MenuItem>Item A</MenuItem>
             <MenuItem>Item B</MenuItem>
             <MenuItem>Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
-    ).toThrowErrorMatchingInlineSnapshot(`"You should only render 1 child"`)
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1' },
+        textContent: 'Trigger hidden',
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      await click(getMenuButton())
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1' },
+        textContent: 'Trigger visible',
+      })
+      assertMenu(getMenu(), { state: MenuState.Open })
+    })
+
+    it('should be possible to render a Menu using a template `as` prop', async () => {
+      renderTemplate(`
+        <Menu as="template">
+          <div>
+            <MenuButton>Trigger</MenuButton>
+            <MenuItems>
+              <MenuItem>Item A</MenuItem>
+              <MenuItem>Item B</MenuItem>
+              <MenuItem>Item C</MenuItem>
+            </MenuItems>
+          </div>
+        </Menu>
+      `)
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      await click(getMenuButton())
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Open })
+    })
+
+    it(
+      'should yell when we render a Menu using a template `as` prop that contains multiple children',
+      suppressConsoleLogs(() => {
+        expect(() =>
+          renderTemplate(`
+            <Menu as="template">
+              <MenuButton>Trigger</MenuButton>
+              <MenuItems>
+                <MenuItem>Item A</MenuItem>
+                <MenuItem>Item B</MenuItem>
+                <MenuItem>Item C</MenuItem>
+              </MenuItems>
+            </Menu>
+          `)
+        ).toThrowErrorMatchingInlineSnapshot(`"You should only render 1 child"`)
+      })
+    )
   })
-)
 
-it('should be possible to render a MenuButton using a default render prop', async () => {
-  renderTemplate(`
-    <Menu>
-      <MenuButton #default="{ show }">
-        Trigger {{ show ? "visible" : "hidden" }}
-      </MenuButton>
-      <MenuItems>
-        <MenuItem>Item A</MenuItem>
-        <MenuItem>Item B</MenuItem>
-        <MenuItem>Item C</MenuItem>
-      </MenuItems>
-    </Menu>
-  `)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1' },
-    textContent: 'Trigger hidden',
-  })
-  assertMenu(getMenu(), { state: MenuState.Closed })
-
-  await click(getMenuButton())
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1' },
-    textContent: 'Trigger visible',
-  })
-  assertMenu(getMenu(), { state: MenuState.Open })
-})
-
-it('should be possible to render a MenuButton using a render prop', async () => {
-  renderTemplate(`
-    <Menu>
-      <MenuButton #render="{ show }">
-        <button :data-show="show">Trigger</button>
-      </MenuButton>
-      <MenuItems>
-        <MenuItem>Item A</MenuItem>
-        <MenuItem>Item B</MenuItem>
-        <MenuItem>Item C</MenuItem>
-      </MenuItems>
-    </Menu>
-  `)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1', 'data-show': 'false' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Closed })
-
-  await click(getMenuButton())
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1', 'data-show': 'true' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Open })
-})
-
-it(
-  'should yell when we render a MenuButton using a render prop that contain multiple children',
-  suppressConsoleLogs(() => {
-    expect(() =>
+  describe('MenuButton', () => {
+    it('should be possible to render a MenuButton using a default render prop', async () => {
       renderTemplate(`
         <Menu>
-          <MenuButton #render="{ show }">
-            <span>Trigger</span>
-            <svg />
+          <MenuButton v-slot="{ open }">
+            Trigger {{ open ? "visible" : "hidden" }}
           </MenuButton>
-          <MenuItems ng-if="show">
+          <MenuItems>
             <MenuItem>Item A</MenuItem>
             <MenuItem>Item B</MenuItem>
             <MenuItem>Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
-    ).toThrowErrorMatchingInlineSnapshot(`"You should only render 1 child"`)
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1' },
+        textContent: 'Trigger hidden',
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      await click(getMenuButton())
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1' },
+        textContent: 'Trigger visible',
+      })
+      assertMenu(getMenu(), { state: MenuState.Open })
+    })
+
+    it('should be possible to render a MenuButton using a template `as` prop', async () => {
+      renderTemplate(`
+        <Menu>
+          <MenuButton as="template" v-slot="{ open }">
+            <button :data-open="open">Trigger</button>
+          </MenuButton>
+          <MenuItems>
+            <MenuItem>Item A</MenuItem>
+            <MenuItem>Item B</MenuItem>
+            <MenuItem>Item C</MenuItem>
+          </MenuItems>
+        </Menu>
+      `)
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1', 'data-open': 'false' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      await click(getMenuButton())
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1', 'data-open': 'true' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Open })
+    })
+
+    it(
+      'should yell when we render a MenuButton using a template `as` prop that contains multiple children',
+      suppressConsoleLogs(() => {
+        expect(() =>
+          renderTemplate(`
+            <Menu>
+              <MenuButton as="template">
+                <span>Trigger</span>
+                <svg />
+              </MenuButton>
+              <MenuItems>
+                <MenuItem>Item A</MenuItem>
+                <MenuItem>Item B</MenuItem>
+                <MenuItem>Item C</MenuItem>
+              </MenuItems>
+            </Menu>
+          `)
+        ).toThrowErrorMatchingInlineSnapshot(`"You should only render 1 child"`)
+      })
+    )
   })
-)
 
-it('should be possible to render MenuItems using a default render prop', async () => {
-  renderTemplate(`
-    <Menu>
-      <MenuButton>Trigger</MenuButton>
-      <MenuItems #default="{ show }">
-        <span>{{ show ? "visible" : "hidden" }}</span>
-        <MenuItem>Item A</MenuItem>
-        <MenuItem>Item B</MenuItem>
-        <MenuItem>Item C</MenuItem>
-      </MenuItems>
-    </Menu>
-  `)
+  describe('MenuItems', () => {
+    it('should be possible to render MenuItems using a default render prop', async () => {
+      renderTemplate(`
+        <Menu>
+          <MenuButton>Trigger</MenuButton>
+          <MenuItems v-slot="{ open }">
+            <span>{{ open ? "visible" : "hidden" }}</span>
+            <MenuItem>Item A</MenuItem>
+            <MenuItem>Item B</MenuItem>
+            <MenuItem>Item C</MenuItem>
+          </MenuItems>
+        </Menu>
+      `)
 
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1' },
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      await click(getMenuButton())
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Open })
+      expect(getMenu()?.firstChild?.textContent).toBe('visible')
+    })
+
+    it('should be possible to render MenuItems using a template `as` prop', async () => {
+      renderTemplate(`
+        <Menu>
+          <MenuButton>Trigger</MenuButton>
+          <MenuItems as="template" v-slot="{ open }">
+            <div :data-open="open">
+              <MenuItem>Item A</MenuItem>
+              <MenuItem>Item B</MenuItem>
+              <MenuItem>Item C</MenuItem>
+            </div>
+          </MenuItems>
+        </Menu>
+      `)
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      await click(getMenuButton())
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Open, attributes: { 'data-open': 'true' } })
+    })
+
+    it('should yell when we render MenuItems using a template `as` prop that contains multiple children', async () => {
+      const state = {
+        resolve(_value: Error | PromiseLike<Error>) {},
+        done(error: unknown) {
+          state.resolve(error as Error)
+          return true
+        },
+        promise: new Promise<Error>(() => {}),
+      }
+
+      state.promise = new Promise<Error>(resolve => {
+        state.resolve = resolve
+      })
+
+      renderTemplate({
+        template: `
+          <Menu>
+            <MenuButton>Trigger</MenuButton>
+            <MenuItems as="template">
+              <MenuItem>Item A</MenuItem>
+              <MenuItem>Item B</MenuItem>
+              <MenuItem>Item C</MenuItem>
+            </MenuItems>
+          </Menu>
+        `,
+        errorCaptured: state.done,
+      })
+
+      await click(getMenuButton())
+      const error = await state.promise
+      expect(error.message).toMatchInlineSnapshot(`"You should only render 1 child"`)
+    })
+
+    it('should be possible to always render the MenuItems if we provide it a `static` prop', () => {
+      renderTemplate(`
+        <Menu>
+          <MenuButton>Trigger</MenuButton>
+          <MenuItems static>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
+          </MenuItems>
+        </Menu>
+      `)
+
+      // Let's verify that the Menu is already there
+      expect(getMenu()).not.toBe(null)
+    })
   })
-  assertMenu(getMenu(), { state: MenuState.Closed })
 
-  await click(getMenuButton())
+  describe('MenuItem', () => {
+    it('should be possible to render MenuItem using a default render prop', async () => {
+      renderTemplate(`
+        <Menu>
+          <MenuButton>Trigger</MenuButton>
+          <MenuItems>
+            <MenuItem v-slot="{ active, disabled }">
+              <span>Item A - {{ JSON.stringify({ active, disabled }) }}</span>
+            </MenuItem>
+            <MenuItem>Item B</MenuItem>
+            <MenuItem>Item C</MenuItem>
+          </MenuItems>
+        </Menu>
+      `)
 
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1' },
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      await click(getMenuButton())
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Open })
+      expect(getMenuItems()[0]?.textContent).toBe(
+        `Item A - ${JSON.stringify({ active: false, disabled: false })}`
+      )
+    })
+
+    it('should be possible to render a MenuItem using a template `as` prop', async () => {
+      renderTemplate(`
+        <Menu>
+          <MenuButton>Trigger</MenuButton>
+          <MenuItems>
+            <MenuItem as="template" v-slot="{ active, disabled }">
+              <a :data-active="active" :data-disabled="disabled">Item A</a>
+            </MenuItem>
+            <MenuItem as="template" v-slot="{ active, disabled }">
+              <a :data-active="active" :data-disabled="disabled">Item B</a>
+            </MenuItem>
+            <MenuItem disabled as="template" v-slot="{ active, disabled }">
+              <a :data-active="active" :data-disabled="disabled">Item C</a>
+            </MenuItem>
+          </MenuItems>
+        </Menu>
+      `)
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Closed,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Closed })
+
+      getMenuButton()?.focus()
+
+      await press(Keys.Enter)
+
+      assertMenuButton(getMenuButton(), {
+        state: MenuButtonState.Open,
+        attributes: { id: 'tailwindui-menu-button-1' },
+      })
+      assertMenu(getMenu(), { state: MenuState.Open })
+      assertMenuItem(getMenuItems()[0], {
+        tag: 'a',
+        attributes: { 'data-active': 'true', 'data-disabled': 'false' },
+      })
+      assertMenuItem(getMenuItems()[1], {
+        tag: 'a',
+        attributes: { 'data-active': 'false', 'data-disabled': 'false' },
+      })
+      assertMenuItem(getMenuItems()[2], {
+        tag: 'a',
+        attributes: { 'data-active': 'false', 'data-disabled': 'true' },
+      })
+    })
+
+    it('should yell when we render a MenuItem using a template `as` prop that contains multiple children', async () => {
+      const state = {
+        resolve(_value: Error | PromiseLike<Error>) {},
+        done(error: unknown) {
+          state.resolve(error as Error)
+          return true
+        },
+        promise: new Promise<Error>(() => {}),
+      }
+
+      state.promise = new Promise<Error>(resolve => {
+        state.resolve = resolve
+      })
+
+      renderTemplate({
+        template: `
+          <Menu>
+            <MenuButton>Trigger</MenuButton>
+            <MenuItems>
+              <MenuItem>
+                <span>Item A</span>
+                <svg />
+              </MenuItem>
+              <MenuItem>Item B</MenuItem>
+              <MenuItem>Item C</MenuItem>
+            </MenuItems>
+          </Menu>
+        `,
+        errorCaptured: state.done,
+      })
+
+      await click(getMenuButton())
+      const error = await state.promise
+      expect(error.message).toMatchInlineSnapshot(`"You should only render 1 child"`)
+    })
   })
-  assertMenu(getMenu(), { state: MenuState.Open })
-  expect(getMenu()?.firstChild?.textContent).toBe('visible')
 })
 
-it('should be possible to render MenuItems using a render prop', async () => {
-  renderTemplate(`
-    <Menu>
-      <MenuButton>Trigger</MenuButton>
-      <MenuItems #render="{ show }">
-        <div :data-show="show">
-          <MenuItem>Item A</MenuItem>
-          <MenuItem>Item B</MenuItem>
-          <MenuItem>Item C</MenuItem>
-        </div>
-      </MenuItems>
-    </Menu>
-  `)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Closed })
-
-  await click(getMenuButton())
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Open, attributes: { 'data-show': 'true' } })
-})
-
-it('should yell when we render MenuItems using a render prop that contain multiple children', async () => {
-  const state = {
-    resolve(_value: Error | PromiseLike<Error>) {},
-    done(error: unknown) {
-      state.resolve(error as Error)
-      return true
-    },
-    promise: new Promise<Error>(() => {}),
-  }
-
-  state.promise = new Promise<Error>(resolve => {
-    state.resolve = resolve
-  })
-
-  renderTemplate({
-    template: `
-      <Menu>
-        <MenuButton>Trigger</MenuButton>
-        <MenuItems #render>
-          <MenuItem>Item A</MenuItem>
-          <MenuItem>Item B</MenuItem>
-          <MenuItem>Item C</MenuItem>
-        </MenuItems>
-      </Menu>
-    `,
-    errorCaptured: state.done,
-  })
-
-  await click(getMenuButton())
-  const error = await state.promise
-  expect(error.message).toMatchInlineSnapshot(`"You should only render 1 child"`)
-})
-
-it('should be possible to render MenuItem using a default render prop', async () => {
-  renderTemplate(`
-    <Menu>
-      <MenuButton>Trigger</MenuButton>
-      <MenuItems>
-        <MenuItem #default="{ active, disabled }">Item A - {{ JSON.stringify({ active, disabled }) }}</MenuItem>
-        <MenuItem>Item B</MenuItem>
-        <MenuItem>Item C</MenuItem>
-      </MenuItems>
-    </Menu>
-  `)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Closed })
-
-  await click(getMenuButton())
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Open })
-  expect(getMenuItems()[0]?.textContent).toBe(
-    `Item A - ${JSON.stringify({ active: false, disabled: false })}`
-  )
-})
-
-it('should be possible to render MenuItem using a render prop', async () => {
-  renderTemplate(`
-    <Menu>
-      <MenuButton>Trigger</MenuButton>
-      <MenuItems>
-        <MenuItem #render="{ active, disabled }">
-          <a :data-active="active" :data-disabled="disabled">Item A</a>
-        </MenuItem>
-        <MenuItem #render="{ active, disabled }">
-          <a :data-active="active" :data-disabled="disabled">Item B</a>
-        </MenuItem>
-        <MenuItem disabled #render="{ active, disabled }">
-          <a :data-active="active" :data-disabled="disabled">Item C</a>
-        </MenuItem>
-      </MenuItems>
-    </Menu>
-  `)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Closed,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Closed })
-
-  getMenuButton()?.focus()
-
-  await press(Keys.Enter)
-
-  assertMenuButton(getMenuButton(), {
-    state: MenuButtonState.Open,
-    attributes: { id: 'tailwindui-menu-button-1' },
-  })
-  assertMenu(getMenu(), { state: MenuState.Open })
-  assertMenuItem(getMenuItems()[0], {
-    tag: 'a',
-    attributes: { 'data-active': 'true', 'data-disabled': 'false' },
-  })
-  assertMenuItem(getMenuItems()[1], {
-    tag: 'a',
-    attributes: { 'data-active': 'false', 'data-disabled': 'false' },
-  })
-  assertMenuItem(getMenuItems()[2], {
-    tag: 'a',
-    attributes: { 'data-active': 'false', 'data-disabled': 'true' },
-  })
-})
-
-it('should yell when we render MenuItem using a render prop that contain multiple children', async () => {
-  const state = {
-    resolve(_value: Error | PromiseLike<Error>) {},
-    done(error: unknown) {
-      state.resolve(error as Error)
-      return true
-    },
-    promise: new Promise<Error>(() => {}),
-  }
-
-  state.promise = new Promise<Error>(resolve => {
-    state.resolve = resolve
-  })
-
-  renderTemplate({
-    template: `
-      <Menu>
-        <MenuButton>Trigger</MenuButton>
-        <MenuItems>
-          <MenuItem #render>
-            <span>Item A</span>
-            <svg />
-          </MenuItem>
-          <MenuItem>Item B</MenuItem>
-          <MenuItem>Item C</MenuItem>
-        </MenuItems>
-      </Menu>
-    `,
-    errorCaptured: state.done,
-  })
-
-  await click(getMenuButton())
-  const error = await state.promise
-  expect(error.message).toMatchInlineSnapshot(`"You should only render 1 child"`)
-})
-
-describe('rendering composition', () => {
+describe('Rendering composition', () => {
   it('should be possible to conditionally render classNames (aka className can be a function?!)', async () => {
     renderTemplate(`
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem :className="JSON.stringify">Item A</MenuItem>
-          <MenuItem disabled :className="JSON.stringify">Item B</MenuItem>
-          <MenuItem class="no-special-treatment">Item C</MenuItem>
+          <MenuItem as="a" :className="JSON.stringify">Item A</MenuItem>
+          <MenuItem as="a" disabled :className="JSON.stringify">Item B</MenuItem>
+          <MenuItem as="a" class="no-special-treatment">Item C</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -562,16 +578,16 @@ describe('rendering composition', () => {
   )
 })
 
-describe('keyboard interactions', () => {
+describe('Keyboard interactions', () => {
   describe('`Enter` key', () => {
     it('should be possible to open the menu with Enter', async () => {
       renderTemplate(`
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -607,11 +623,11 @@ describe('keyboard interactions', () => {
 
     it('should have no active menu item when there are no menu items at all', async () => {
       renderTemplate(`
-          <Menu>
-            <MenuButton>Trigger</MenuButton>
-            <MenuItems />
-          </Menu>
-        `)
+        <Menu>
+          <MenuButton>Trigger</MenuButton>
+          <MenuItems />
+        </Menu>
+      `)
 
       assertMenu(getMenu(), { state: MenuState.Closed })
 
@@ -630,9 +646,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -660,9 +676,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -749,9 +765,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -789,11 +805,11 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
             <MenuItem as="button" :onClick="clickHandler">
               Item B
             </MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `,
@@ -833,9 +849,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -892,9 +908,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -922,9 +938,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1017,9 +1033,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1063,9 +1079,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1111,9 +1127,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1172,9 +1188,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1215,9 +1231,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1250,9 +1266,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1283,9 +1299,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1344,9 +1360,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem disabled>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a" disabled>Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1375,9 +1391,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1414,9 +1430,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1467,9 +1483,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1495,10 +1511,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem disabled>Item C</MenuItem>
-            <MenuItem disabled>Item D</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a" disabled>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1524,10 +1540,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem disabled>Item C</MenuItem>
-            <MenuItem disabled>Item D</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a" disabled>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1577,9 +1593,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1605,10 +1621,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem disabled>Item C</MenuItem>
-            <MenuItem disabled>Item D</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a" disabled>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1634,10 +1650,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem disabled>Item C</MenuItem>
-            <MenuItem disabled>Item D</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a" disabled>Item C</MenuItem>
+            <MenuItem as="a" disabled>Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1687,9 +1703,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1715,10 +1731,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
-            <MenuItem>Item D</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
+            <MenuItem as="a">Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1743,10 +1759,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem disabled>Item C</MenuItem>
-            <MenuItem>Item D</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a" disabled>Item C</MenuItem>
+            <MenuItem as="a">Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1796,9 +1812,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>Item A</MenuItem>
-            <MenuItem>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
+            <MenuItem as="a">Item A</MenuItem>
+            <MenuItem as="a">Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1824,10 +1840,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem>Item C</MenuItem>
-            <MenuItem>Item D</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a">Item C</MenuItem>
+            <MenuItem as="a">Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1852,10 +1868,10 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem disabled>Item A</MenuItem>
-            <MenuItem disabled>Item B</MenuItem>
-            <MenuItem disabled>Item C</MenuItem>
-            <MenuItem>Item D</MenuItem>
+            <MenuItem as="a" disabled>Item A</MenuItem>
+            <MenuItem as="a" disabled>Item B</MenuItem>
+            <MenuItem as="a" disabled>Item C</MenuItem>
+            <MenuItem as="a">Item D</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1905,9 +1921,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>alice</MenuItem>
-            <MenuItem>bob</MenuItem>
-            <MenuItem>charlie</MenuItem>
+            <MenuItem as="a">alice</MenuItem>
+            <MenuItem as="a">bob</MenuItem>
+            <MenuItem as="a">charlie</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1935,9 +1951,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>alice</MenuItem>
-            <MenuItem>bob</MenuItem>
-            <MenuItem>charlie</MenuItem>
+            <MenuItem as="a">alice</MenuItem>
+            <MenuItem as="a">bob</MenuItem>
+            <MenuItem as="a">charlie</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1971,9 +1987,9 @@ describe('keyboard interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem>alice</MenuItem>
-            <MenuItem disabled>bob</MenuItem>
-            <MenuItem>charlie</MenuItem>
+            <MenuItem as="a">alice</MenuItem>
+            <MenuItem as="a" disabled>bob</MenuItem>
+            <MenuItem as="a">charlie</MenuItem>
           </MenuItems>
         </Menu>
       `)
@@ -1998,15 +2014,15 @@ describe('keyboard interactions', () => {
   })
 })
 
-describe('mouse interactions', () => {
+describe('Mouse interactions', () => {
   it('should be possible to open a menu on click', async () => {
     renderTemplate(`
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>Item A</MenuItem>
-          <MenuItem>Item B</MenuItem>
-          <MenuItem>Item C</MenuItem>
+          <MenuItem as="a">Item A</MenuItem>
+          <MenuItem as="a">Item B</MenuItem>
+          <MenuItem as="a">Item C</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2158,9 +2174,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a">bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2187,9 +2203,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a">bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2208,9 +2224,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a">bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2235,9 +2251,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem disabled>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a" disabled>bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2256,9 +2272,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem disabled>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a" disabled>bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2280,9 +2296,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a">bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2319,9 +2335,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem disabled>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a" disabled>bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2344,9 +2360,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a">bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2367,9 +2383,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem disabled>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a" disabled>bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2390,9 +2406,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a">bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2416,9 +2432,9 @@ describe('mouse interactions', () => {
       <Menu>
         <MenuButton>Trigger</MenuButton>
         <MenuItems>
-          <MenuItem>alice</MenuItem>
-          <MenuItem disabled>bob</MenuItem>
-          <MenuItem>charlie</MenuItem>
+          <MenuItem as="a">alice</MenuItem>
+          <MenuItem as="a" disabled>bob</MenuItem>
+          <MenuItem as="a">charlie</MenuItem>
         </MenuItems>
       </Menu>
     `)
@@ -2442,11 +2458,11 @@ describe('mouse interactions', () => {
         <Menu>
           <MenuButton>Trigger</MenuButton>
           <MenuItems>
-            <MenuItem :onClick="clickHandler">alice</MenuItem>
-            <MenuItem :onClick="clickHandler" disabled>
+            <MenuItem as="a" :onClick="clickHandler">alice</MenuItem>
+            <MenuItem as="a" :onClick="clickHandler" disabled>
               bob
             </MenuItem>
-            <MenuItem :onClick="clickHandler">charlie</MenuItem>
+            <MenuItem as="a" :onClick="clickHandler">charlie</MenuItem>
           </MenuItems>
         </Menu>
       `,

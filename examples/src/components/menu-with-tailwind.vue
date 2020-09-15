@@ -3,7 +3,7 @@
     <div class="relative inline-block text-left">
       <Menu>
         <span class="rounded-md shadow-sm">
-          <Menu.Button
+          <MenuButton
             class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-50 active:text-gray-800"
           >
             <span>Options</span>
@@ -14,7 +14,7 @@
                 clipRule="evenodd"
               />
             </svg>
-          </Menu.Button>
+          </MenuButton>
         </span>
 
         <transition
@@ -25,7 +25,7 @@
           leave-from-class="transform scale-100 opacity-100"
           leave-to-class="transform scale-95 opacity-0"
         >
-          <Menu.Items
+          <MenuItems
             class="absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none"
           >
             <div class="px-4 py-3">
@@ -42,7 +42,7 @@
             <div class="py-1">
               <CustomMenuItem href="#sign-out">Sign out</CustomMenuItem>
             </div>
-          </Menu.Items>
+          </MenuItems>
         </transition>
       </Menu>
     </div>
@@ -51,18 +51,18 @@
 
 <script>
 import { defineComponent, h } from 'vue'
-import { Menu } from '@tailwindui/vue'
+import { Menu, MenuButton, MenuItems, MenuItem } from '@tailwindui/vue'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
 const CustomMenuItem = defineComponent({
-  components: { ...Menu },
+  components: { Menu, MenuButton, MenuItems, MenuItem },
   setup(props, { slots }) {
     return () => {
-      return h(Menu['Menu.Item'], ({ active, disabled }) =>
-        h(
+      return h(MenuItem, ({ active, disabled }) => {
+        return h(
           'a',
           {
             class: classNames(
@@ -76,14 +76,17 @@ const CustomMenuItem = defineComponent({
             h('kbd', { class: classNames('font-sans', active && 'text-indigo-50') }, '⌘K'),
           ]
         )
-      )
+      })
     }
   },
 })
 
 export default {
   components: {
-    ...Menu,
+    Menu,
+    MenuButton,
+    MenuItems,
+    MenuItem,
     CustomMenuItem,
   },
 }
