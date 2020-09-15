@@ -167,7 +167,9 @@ describe('Rendering', () => {
               </MenuItems>
             </Menu>
           `)
-        ).toThrowErrorMatchingInlineSnapshot(`"You should only render 1 child"`)
+        ).toThrowErrorMatchingInlineSnapshot(
+          `"You should only render 1 child or use the \`as=\\"...\\"\` prop"`
+        )
       })
     )
   })
@@ -250,7 +252,9 @@ describe('Rendering', () => {
               </MenuItems>
             </Menu>
           `)
-        ).toThrowErrorMatchingInlineSnapshot(`"You should only render 1 child"`)
+        ).toThrowErrorMatchingInlineSnapshot(
+          `"You should only render 1 child or use the \`as=\\"...\\"\` prop"`
+        )
       })
     )
   })
@@ -344,7 +348,9 @@ describe('Rendering', () => {
 
       await click(getMenuButton())
       const error = await state.promise
-      expect(error.message).toMatchInlineSnapshot(`"You should only render 1 child"`)
+      expect(error.message).toMatchInlineSnapshot(
+        `"You should only render 1 child or use the \`as=\\"...\\"\` prop"`
+      )
     })
 
     it('should be possible to always render the MenuItems if we provide it a `static` prop', () => {
@@ -477,7 +483,9 @@ describe('Rendering', () => {
 
       await click(getMenuButton())
       const error = await state.promise
-      expect(error.message).toMatchInlineSnapshot(`"You should only render 1 child"`)
+      expect(error.message).toMatchInlineSnapshot(
+        `"You should only render 1 child or use the \`as=\\"...\\"\` prop"`
+      )
     })
   })
 })

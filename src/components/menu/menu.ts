@@ -220,7 +220,8 @@ export const Menu = defineComponent({
         if (Object.keys(passThroughProps).length > 0 || 'class' in attrs) {
           const [menu, ...other] = slots.default?.(slot) ?? []
 
-          if (other.length > 0) throw new Error('You should only render 1 child')
+          if (other.length > 0)
+            throw new Error('You should only render 1 child or use the `as="..."` prop')
           return cloneVNode(menu, passThroughProps as Record<string, any>)
         }
       }
@@ -253,7 +254,8 @@ export const MenuButton = defineComponent({
 
     if (as === 'template') {
       const [button, ...other] = this.$slots.default?.(slot) ?? []
-      if (other.length > 0) throw new Error('You should only render 1 child')
+      if (other.length > 0)
+        throw new Error('You should only render 1 child or use the `as="..."` prop')
       return cloneVNode(button, allProps)
     }
 
@@ -345,7 +347,8 @@ export const MenuItems = defineComponent({
 
     if (as === 'template') {
       const [items, ...other] = this.$slots.default?.(slot) ?? []
-      if (other.length > 0) throw new Error('You should only render 1 child')
+      if (other.length > 0)
+        throw new Error('You should only render 1 child or use the `as="..."` prop')
       return cloneVNode(items, allProps)
     }
 
@@ -495,7 +498,8 @@ export const MenuItem = defineComponent({
 
       if (as === 'template') {
         const [item, ...other] = slots.default?.(slot) ?? []
-        if (other.length > 0) throw new Error('You should only render 1 child')
+        if (other.length > 0)
+          throw new Error('You should only render 1 child or use the `as="..."` prop')
         return cloneVNode(item, allProps)
       }
 
