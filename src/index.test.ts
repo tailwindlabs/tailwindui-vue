@@ -6,13 +6,6 @@ import * as TailwindUI from './index'
  */
 it('should expose the correct components', () => {
   expect(Object.keys(TailwindUI)).toEqual([
-    // Listbox
-    'ListboxLabel',
-    'ListboxButton',
-    'ListboxList',
-    'ListboxOption',
-    'Listbox',
-
     // Menu
     'Menu',
     'MenuButton',
