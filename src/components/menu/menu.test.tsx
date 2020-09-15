@@ -154,11 +154,11 @@ describe('Rendering', () => {
     })
 
     it(
-      'should yell when we render a Menu using a template `as` prop that contains multiple children',
+      'should yell when we render a Menu using a template `as` prop (default) that contains multiple children (if we passthrough props)',
       suppressConsoleLogs(() => {
         expect(() =>
           renderTemplate(`
-            <Menu as="template">
+            <Menu class="relative">
               <MenuButton>Trigger</MenuButton>
               <MenuItems>
                 <MenuItem>Item A</MenuItem>

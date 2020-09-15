@@ -85,8 +85,8 @@ function useMenuContext(component: string) {
 }
 
 export const Menu = defineComponent({
-  props: { as: { type: [Object, String], default: 'div' } },
-  setup(props, { slots }) {
+  props: { as: { type: [Object, String], default: 'template' } },
+  setup(props, { slots, attrs }) {
     const menuState = ref<StateDefinition['menuState']['value']>(MenuStates.Closed)
     const buttonRef = ref<StateDefinition['buttonRef']['value']>(null)
     const itemsRef = ref<StateDefinition['itemsRef']['value']>(null)
@@ -214,15 +214,18 @@ export const Menu = defineComponent({
 
     return () => {
       const slot = { open: menuState.value === MenuStates.Open }
-      const { as } = props
+      const { as, ...passThroughProps } = props
 
       if (as === 'template') {
-        const [menu, ...other] = slots.default?.(slot) ?? []
-        if (other.length > 0) throw new Error('You should only render 1 child')
-        return cloneVNode(menu, props)
+        if (Object.keys(passThroughProps).length > 0 || 'class' in attrs) {
+          const [menu, ...other] = slots.default?.(slot) ?? []
+
+          if (other.length > 0) throw new Error('You should only render 1 child')
+          return cloneVNode(menu, passThroughProps as Record<string, any>)
+        }
       }
 
-      return h(as, slots.default?.(slot))
+      return h(as, passThroughProps, slots.default?.(slot))
     }
   },
 })
