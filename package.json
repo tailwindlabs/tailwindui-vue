@@ -1,6 +1,6 @@
 {
   "name": "@tailwindui/vue",
-  "version": "0.1.0-alpha.0",
+  "version": "0.0.0-24fe65b70",
   "author": "Adam Wathan",
   "license": "MIT",
   "main": "dist/index.js",
