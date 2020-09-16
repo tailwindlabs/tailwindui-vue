@@ -1,18 +1,17 @@
 import {
   defineComponent,
-  h,
   ref,
   provide,
   inject,
   onMounted,
   onUnmounted,
   computed,
-  cloneVNode,
   nextTick,
   InjectionKey,
   Ref,
 } from 'vue'
 import { match } from '../../utils/match'
+import { render } from '../../utils/render'
 import { useId } from '../../hooks/use-id'
 
 enum MenuStates {
@@ -214,19 +213,7 @@ export const Menu = defineComponent({
 
     return () => {
       const slot = { open: menuState.value === MenuStates.Open }
-      const { as, ...passThroughProps } = props
-
-      if (as === 'template') {
-        if (Object.keys(passThroughProps).length > 0 || 'class' in attrs) {
-          const [menu, ...other] = slots.default?.(slot) ?? []
-
-          if (other.length > 0)
-            throw new Error('You should only render 1 child or use the `as="..."` prop')
-          return cloneVNode(menu, passThroughProps as Record<string, any>)
-        }
-      }
-
-      return h(as, passThroughProps, slots.default?.(slot))
+      return render({ props, slot, slots, attrs })
     }
   },
 })
@@ -237,7 +224,6 @@ export const MenuButton = defineComponent({
     const api = useMenuContext('MenuButton')
 
     const slot = { open: api.menuState.value === MenuStates.Open }
-    const { as, ...passThroughProps } = this.$props
     const propsWeControl = {
       ref: 'el',
       id: this.id,
@@ -250,16 +236,13 @@ export const MenuButton = defineComponent({
       onPointerUp: this.handlePointerUp,
       onPointerDown: this.handlePointerDown,
     }
-    const allProps = { ...passThroughProps, ...propsWeControl }
 
-    if (as === 'template') {
-      const [button, ...other] = this.$slots.default?.(slot) ?? []
-      if (other.length > 0)
-        throw new Error('You should only render 1 child or use the `as="..."` prop')
-      return cloneVNode(button, allProps)
-    }
-
-    return h(as, allProps, this.$slots.default?.(slot))
+    return render({
+      props: { ...this.$props, ...propsWeControl },
+      slot,
+      attrs: this.$attrs,
+      slots: this.$slots,
+    })
   },
   setup() {
     const api = useMenuContext('MenuButton')
@@ -326,7 +309,7 @@ export const MenuItems = defineComponent({
     const api = useMenuContext('MenuItems')
 
     // `static` is a reserved keyword, therefore aliasing it...
-    const { as, static: isStatic, ...passThroughProps } = this.$props
+    const { static: isStatic, ...passThroughProps } = this.$props
 
     if (!isStatic && api.menuState.value === MenuStates.Closed) return null
 
@@ -343,16 +326,13 @@ export const MenuItems = defineComponent({
       tabIndex: 0,
       ref: 'el',
     }
-    const allProps = { ...passThroughProps, ...propsWeControl }
 
-    if (as === 'template') {
-      const [items, ...other] = this.$slots.default?.(slot) ?? []
-      if (other.length > 0)
-        throw new Error('You should only render 1 child or use the `as="..."` prop')
-      return cloneVNode(items, allProps)
-    }
-
-    return h(as, allProps, this.$slots.default?.(slot))
+    return render({
+      props: { ...passThroughProps, ...propsWeControl },
+      slot,
+      attrs: this.$attrs,
+      slots: this.$slots,
+    })
   },
   setup() {
     const api = useMenuContext('MenuItems')
@@ -421,7 +401,7 @@ export const MenuItem = defineComponent({
     className: { type: [String, Function], required: false },
     onClick: { type: Function, required: false },
   },
-  setup(props, { slots }) {
+  setup(props, { slots, attrs }) {
     const api = useMenuContext('MenuItem')
     const id = `tailwindui-menu-item-${useId()}`
     const { disabled, class: defaultClass, className = defaultClass } = props
@@ -479,7 +459,6 @@ export const MenuItem = defineComponent({
 
     return () => {
       const slot = { active: active.value, disabled }
-      const { as, ...passThroughProps } = props
       const propsWeControl = {
         id,
         role: 'menuitem',
@@ -494,16 +473,13 @@ export const MenuItem = defineComponent({
         onPointerLeave: handlePointerLeave,
         onPointerUp: handlePointerUp,
       }
-      const allProps = { ...passThroughProps, ...propsWeControl }
 
-      if (as === 'template') {
-        const [item, ...other] = slots.default?.(slot) ?? []
-        if (other.length > 0)
-          throw new Error('You should only render 1 child or use the `as="..."` prop')
-        return cloneVNode(item, allProps)
-      }
-
-      return h(as, allProps, slots.default?.(slot))
+      return render({
+        props: { ...props, ...propsWeControl },
+        slot,
+        attrs,
+        slots,
+      })
     }
   },
 })

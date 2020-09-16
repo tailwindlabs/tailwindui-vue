@@ -40,6 +40,7 @@ function cleanupAtWrapper(wrapper) {
 
   try {
     wrapper.unmount()
+  } catch {
   } finally {
     mountedWrappers.delete(wrapper)
   }
