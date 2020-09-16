@@ -51,9 +51,9 @@ We'll be continuing to develop new components on an on-going basis, with a goal 
 
 ## Menu Button (Dropdown)
 
-The `Menu` component and related child components are used to quickly build custom dropdown components that are fully accessible out of the box, including correct ARIA attribute management and robust keyboard navigation support.
+[View complete demo on CodeSandbox](https://codesandbox.io/s/flamboyant-glade-b2jb4?file=/src/App.vue)
 
-[View complete demo on CodeSandbox](#)
+The `Menu` component and related child components are used to quickly build custom dropdown components that are fully accessible out of the box, including correct ARIA attribute management and robust keyboard navigation support.
 
 - [Basic example](#basic-example)
 - [Styling](#styling)
